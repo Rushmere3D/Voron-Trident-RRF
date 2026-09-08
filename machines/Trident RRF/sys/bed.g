@@ -17,7 +17,7 @@ M98 P"/macros/szp_mode_normal.g"
 
 ; First calibration pass
 G30 K0 P0 X30  Y30  Z-99999
-G30 K0 P1 X125 Y220 Z-99999
+G30 K0 P1 X125 Y230 Z-99999
 G30 K0 P2 X220 Y30  Z-99999 S3
 
 echo "Initial deviation: " ^ move.calibration.initial.deviation
@@ -43,7 +43,7 @@ echo "Deviation before pass: "^ move.calibration.initial.deviation
 M98 P"/macros/szp_mode_normal.g"
 
 G30 K0 P0 X30  Y30  Z-99999
-G30 K0 P1 X125 Y220 Z-99999
+G30 K0 P1 X125 Y230 Z-99999
 G30 K0 P2 X220 Y30  Z-99999 S3
 
 echo "Tramming complete"

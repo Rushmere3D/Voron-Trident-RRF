@@ -1,0 +1,56 @@
+; /macros/sb_leds.g
+; A single unified file for all Stealthburner RGB LED statuses
+
+if !exists(param.S)
+    abort "Error: You must provide a status parameter (e.g., S""ready"")"
+
+if param.S = "busy"
+    ; Logo: Red | Nozzles: Off
+    M150 E0 R255 U0 B0 S1 F1
+    M150 E0 R0 U0 B0 S2 F0
+
+elif param.S = "cleaning"
+    ; Logo: Blue | Nozzles: White (Mixed RGB White)
+    M150 E0 R0 U0 B255 S1 F1
+    M150 E0 R255 U255 B255 S2 F0
+
+elif param.S = "heating"
+    ; Logo: Yellow/Orange | Nozzles: Dim Orange
+    M150 E0 R255 U60 B0 S1 F1
+    M150 E0 R255 U10 B0 S2 F0
+
+elif param.S = "homing"
+    ; Logo: Cyan | Nozzles: White (Mixed RGB White)
+    M150 E0 R0 U255 B255 S1 F1
+    M150 E0 R255 U255 B255 S2 F0
+
+elif param.S = "printing"
+    ; Logo: Red | Nozzles: White (Mixed RGB White)
+    M150 E0 R255 U0 B0 S1 F1
+    M150 E0 R255 U255 B255 S2 F0
+
+elif param.S = "ready"
+    ; Logo: White | Nozzles: White (Mixed RGB White)
+    M150 E0 R255 U255 B255 S1 F1
+    M150 E0 R255 U255 B255 S2 F0
+
+elif param.S = "leveling"
+    ; Logo: Purple | Nozzles: White (Mixed RGB White)
+    M150 E0 R128 U64 B128 S1 F1
+    M150 E0 R255 U255 B255 S2 F0
+
+elif param.S = "meshing"
+    ; Logo: Green | Nozzles: White  (Mixed RGB White)
+    M150 E0 R128 U255 B0 S1 F1
+    M150 E0 R255 U255 B255 S2 F0
+
+elif param.S = "calibrating_Z"
+    ; Logo: Pink | Nozzles: White  (Mixed RGB White)
+    M150 E0 R192 U0 B32 S1 F1
+    M150 E0 R255 U255 B255 S2 F0
+
+elif param.S = "off"
+    M150 E0 R0 U0 B0 S1 F1
+    M150 E0 R0 U0 B0 S2 F0
+else
+    echo "Unknown LED status requested"

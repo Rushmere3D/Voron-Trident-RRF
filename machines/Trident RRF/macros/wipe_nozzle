@@ -1,0 +1,33 @@
+; /macros/wipe_nozzle.g
+; Nozzle scrub routine for Voron Trident (RRF 3.x)
+
+; --- CONFIGURATION (Adjust these values for your setup) ---
+var brush_x_start = 85      ; Left edge of your brush
+var brush_x_end = 40       ; Right edge of your brush
+var brush_y = 262           ; Y position of your brush (typically past max print area)
+;var brush_z = 2.5           ; Z height where nozzle firmly engages the bristles
+var wipe_count = 5          ; Number of scrubbing passes
+; ----------------------------------------------------------
+
+M400                        ; Wait for any current moves to finish
+
+M98 P"/macros/sb_leds" S"cleaning" ; Change Stealthburner LEDs to "cleaning" (Blue Logo, White Nozzles)
+G91                         ; Relative positioning
+G1 Z5 F1000                 ; Lift Z by 5mm to clear printed parts or bed clips
+G90                         ; Absolute positioning
+
+; Step 1: Rapid travel to the starting position just above the brush
+G1 X{var.brush_x_start} Y{var.brush_y} F12000 
+;G1 Z{var.brush_z} F3000     ; Lower nozzle into the brush bristles
+
+; Step 2: Wipe loop sequence
+while iterations < var.wipe_count
+    G1 X{var.brush_x_end} F8000
+    G1 X{var.brush_x_start} F8000
+
+; Step 3: Exit safely
+G91                         ; Relative positioning
+G1 Z5 F3000                 ; Lift Z back up clear of the brush
+G90                         ; Back to absolute positioning
+
+M400                        ; Clear movement buffer

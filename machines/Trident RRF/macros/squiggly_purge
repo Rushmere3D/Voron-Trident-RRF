@@ -1,0 +1,97 @@
+; /macros/squiggly_purge.g
+; High-Stability Fixed-Speed Sine-Wave Purge Routine for RRF 3.5+
+
+; --- Mathematical constants ---
+var TAU = 6.28318
+
+; --- Base macro parameters with defaults ---
+var steps = exists(param.STEPS) ? param.STEPS : 16
+var periods = exists(param.PERIODS) ? param.PERIODS : 10
+var amplitude = exists(param.AMPLITUDE) ? param.AMPLITUDE : 4.0
+var period_length = exists(param.PERIOD_LENGTH) ? param.PERIOD_LENGTH : 5.0
+var purge_distance = exists(param.PURGE_LENGTH) ? param.PURGE_LENGTH : 25.0 ; mm of raw filament input
+var unretract_length = exists(param.UNRETRACT_LENGTH) ? param.UNRETRACT_LENGTH : 4.0
+var direction = exists(param.LINE_DIRECTION) ? param.LINE_DIRECTION : "X"
+
+; --- Physical Printer Limits ---
+var max_x = move.axes[0].max
+var min_x = move.axes[0].min
+var max_y = move.axes[1].max
+var min_y = move.axes[1].min
+
+var prime_line_x = exists(param.START_X) ? param.START_X : 5.0
+var prime_line_y = exists(param.START_Y) ? param.START_Y : 3.5
+var center_x = var.max_x / 2.0
+var center_y = var.max_y / 2.0
+
+; Determine travel direction (+1 or -1) to avoid moving off the bed edges
+var prime_line_way = 1
+if var.direction = "X" && var.prime_line_x > var.center_x
+    set var.prime_line_way = -1
+if var.direction = "Y" && var.prime_line_y > var.center_y
+    set var.prime_line_way = -1
+
+; --- FIXED CONTROL SPEED ---
+; Slower feedrates ensure stable movements over rapid directional changes.
+; Change 1200 to 900 if your gantry still vibrates too aggressively.
+var print_speed = 600
+
+; --- Calculate Segment Volumetrics ---
+var total_segments = var.steps * var.periods
+var segment_length = var.period_length / var.steps
+var e_per_segment = var.purge_distance / var.total_segments
+
+; --- Physical Motion Execution ---
+G91                                 ; Relative positioning
+M83                                 ; Relative extrusion
+if move.axes[2].userPosition < 5.0
+    G1 Z5 F600
+
+G90                                 ; Absolute positioning
+G0 X{var.prime_line_x} Y{var.prime_line_y} F12000
+G1 Z0.3 F600                        ; Drop to standard first layer gap
+
+G92 E0
+G1 E{var.unretract_length} F300     ; Priming the tip of the nozzle
+G92 E0
+
+; --- The Active Wave Generation Wiping Loop ---
+var run_idx = 1
+var current_x = var.prime_line_x
+var current_y = var.prime_line_y
+var keep_running = true
+
+while var.run_idx <= var.total_segments && var.keep_running
+    var rad_angle_run = (var.run_idx / var.steps) * var.TAU
+    var dist_wave = (var.amplitude / 2.0) * sin(var.rad_angle_run)
+
+    if var.direction = "X"
+        set var.current_x = var.prime_line_x + ((var.run_idx * var.segment_length) * var.prime_line_way)
+        set var.current_y = var.prime_line_y + var.dist_wave
+        if var.current_x > (var.max_x - 5) || var.current_x < (var.min_x + 5)
+            set var.keep_running = false
+    else
+        set var.current_x = var.prime_line_x + var.dist_wave
+        set var.current_y = var.prime_line_y + ((var.run_idx * var.segment_length) * var.prime_line_way)
+        if var.current_y > (var.max_y - 5) || var.current_y < (var.min_y + 5)
+            set var.keep_running = false
+
+    if var.keep_running
+        G1 X{var.current_x} Y{var.current_y} E{var.e_per_segment} F{var.print_speed}
+        set var.run_idx = var.run_idx + 1
+
+; --- Final Retraction and Clean Exit ---
+G92 E0
+G1 E-0.4 F2100                      ; Quick retract
+G92 E0
+G91
+G1 Z3 F600                          ; Z-hop clear of the purge line
+G90
+
+G91
+if var.direction = "X"
+    G1 X{5.0 * var.prime_line_way} Y5.0 F12000
+else
+    G1 X5.0 Y{5.0 * var.prime_line_way} F12000
+G90
+M400                                ; Flush movement queue

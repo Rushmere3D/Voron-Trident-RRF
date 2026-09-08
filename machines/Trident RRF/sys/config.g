@@ -54,12 +54,12 @@ M350 X16 Y16 Z16 I1                                 ; configure microstepping wi
 M92 X80 Y80 Z400                                    ; configure steps per mm
 
 ;==================================                 ;
-; Extruders                                         ;
+; Extruder                                          ;
 ;==================================                 ;
 M584 E124.0                                         ; set extruder mapping
 M350 E16 I1                                         ; configure microstepping with interpolation
 M906 E700                                           ; set extruder driver currents
-M92 E720                                            ; configure steps per mm
+M92 E900                                            ; configure steps per mm
 M566 E300                                           ; set maximum instantaneous speed changes (mm/min)
 M203 E7200                                          ; set maximum speeds (mm/min)
 M201 E2000                                          ; set accelerations (mm/s^2)
@@ -75,7 +75,7 @@ M208 X0:250 Y0:263 Z0:240                           ; set minimum and maximum ax
 M566 X500 Y500 Z120                                 ; set maximum instantaneous speed changes (mm/min)
 M203 X18000.00 Y18000.00 Z800.00                    ; set maximum speeds (mm/min)
 M201 X5000.00 Y5000.00 Z250.00                      ; set accelerations (mm/s^2)
-M906 X1000 Y1000 Z700                               ; set axis driver currents
+M906 X1000 Y1000 Z900                               ; set axis driver currents
 
 ;==================================                 ;
 ; Idle Current Reduction                            ;
@@ -102,7 +102,7 @@ M574 S1 Y2 P"io6.in"                                ; configure Y axis endstop
 ;==================================                 ;
 ; Mesh Bed Compensation                             ;
 ;==================================                 ;
-M557 X20:230 Y25:240 P5:5                           ; define grid for mesh bed compensation
+M557 X20:230 Y30:240 P5:5                           ; define grid for mesh bed compensation
 
 ;==================================                                     ;
 ; Temp Sensors                                                          ;
@@ -126,7 +126,7 @@ M140 H0                                                                 ; map he
 M143 H0 S120                                                            ; set temperature limit for heater 0 to 120C
 
 ; Tool 0 heater
-M308 S1 P"124.temp0" Y"thermistor" A"SB CPAP" T100000 B4725 C7.06e-8    ; configure sensor 1 as thermistor on pin temp1
+M308 S1 P"124.temp0" Y"thermistor" A"Revo" T100000 B4725 C7.06e-8    ; configure sensor 1 as thermistor on pin temp1
 M950 H1 C"124.out0" T1                                      	        ; create nozzle heater output on out1 and map it to sensor 1
 M307 H1 B0 S1.00                                         		      	; disable bang-bang mode for heater  and set PWM limit
 M143 H1 S300                                              		      	; set temperature limit for heater 1 to 300C
