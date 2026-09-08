@@ -5,7 +5,7 @@
 
 ;G92 X0 ; set X=0
 ;M118 L1 P0 S"Warning: X is NOT homed but its position has been set to 0."
-
+M98 P"/macros/sb_leds" S"homing"
 G92 X0
 
 if !move.axes[1].homed

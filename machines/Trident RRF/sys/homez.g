@@ -39,10 +39,10 @@ G30 K0 S1                 ; execute Z homing to ensure printhead is close to bed
 M98 P"/macros/szp_mode_touch.g"
 G30 K0 S1                  ; execute contact probing and set Z
 G91                        ; relative positioning
-G1 Z3                      ; move up a bit
+G1 Z5                      ; move up a bit
 G90                        ; absolute positioning
  
 ; FInalization
 M564 H1                     ; re-lock movement 
 M913 Z100                   ; reset Z motor current to 100%  
- 
+M98 P"/macros/sb_leds" S"ready"
