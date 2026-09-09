@@ -1,0 +1,35 @@
+; /macros/heat_soak
+; Active Heat Soak Control Macro (Launches Background Thread with Timeout)
+
+; --- 1. Parameter Gathering ---
+var target_chamber = exists(param.TARGET) ? param.TARGET : 40.0
+var bed_temp = exists(param.BED) ? param.BED : 100.0
+var timeout_mins = exists(param.TIMEOUT) ? param.TIMEOUT : 40    ; Default 30 minute timeout
+
+; --- 2. Establish Global Control Variables ---
+if !exists(global.soak_active)
+    global soak_active = false
+if !exists(global.soak_target)
+    global soak_target = 40.0
+if !exists(global.soak_ready)
+    global soak_ready = false
+if !exists(global.soak_max_loops)
+    global soak_max_loops = 240
+if !exists(global.soak_timer_loops)
+    global soak_timer_loops = 0
+
+; --- 3. Initialize the Background Task ---
+set global.soak_target = var.target_chamber + 0.0
+set global.soak_ready = false
+set global.soak_active = true
+set global.soak_timer_loops = 0
+; Calculate max loops allowed (e.g. 30 mins * 60 secs / 10 sec intervals = 180 loops)
+set global.soak_max_loops = (var.timeout_mins * 60) / 10
+
+; --- 4. Turn On Hardware Automatically ---
+echo "Starting heat soak loop. Turning bed heater to " ^ var.bed_temp ^ "°C."
+M140 S{var.bed_temp}         ; Turn on bed heater
+M106 P0 S0.25                 ; Turn on Part Fan at 25% speed
+
+; M98 P"/macros/sb_leds.g" S"heating" ; Set Stealthburner toolhead to orange
+echo "Chamber heat soak processing in background. Timeout set to: " ^ var.timeout_mins ^ " mins."

@@ -1,0 +1,8 @@
+; /macros/cancel_heat_soak
+; Instantly aborts the background heat soak routine
+set global.soak_active = false
+set global.soak_ready = false
+M140 S0                     ; Turn off bed heater safely
+M106 P0 S0                  ; Turn off part cooling fan safely
+M150 E1 R0 U0 B128 S8 F0 ; Reset case lights back to white
+echo "Chamber heat soak aborted by user."
