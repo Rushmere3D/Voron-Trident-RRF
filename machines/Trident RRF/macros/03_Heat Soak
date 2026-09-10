@@ -2,7 +2,7 @@
 ; Active Heat Soak Control Macro (Launches Background Thread with Timeout)
 
 ; --- 1. Parameter Gathering ---
-var target_chamber = exists(param.TARGET) ? param.TARGET : 40.0
+var target_chamber = exists(param.TARGET) ? param.TARGET : 45.0
 var bed_temp = exists(param.BED) ? param.BED : 100.0
 var timeout_mins = exists(param.TIMEOUT) ? param.TIMEOUT : 40    ; Default 30 minute timeout
 
@@ -10,7 +10,7 @@ var timeout_mins = exists(param.TIMEOUT) ? param.TIMEOUT : 40    ; Default 30 mi
 if !exists(global.soak_active)
     global soak_active = false
 if !exists(global.soak_target)
-    global soak_target = 40.0
+    global soak_target = 45.0
 if !exists(global.soak_ready)
     global soak_ready = false
 if !exists(global.soak_max_loops)

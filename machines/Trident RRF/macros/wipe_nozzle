@@ -2,8 +2,8 @@
 ; Nozzle scrub routine for Voron Trident (RRF 3.x)
 
 ; --- CONFIGURATION (Adjust these values for your setup) ---
-var brush_x_start = 85      ; Left edge of your brush
-var brush_x_end = 40       ; Right edge of your brush
+var brush_x_start = 78      ; Left edge of your brush
+var brush_x_end = 33       ; Right edge of your brush
 var brush_y = 262           ; Y position of your brush (typically past max print area)
 ;var brush_z = 2.5           ; Z height where nozzle firmly engages the bristles
 var wipe_count = 5          ; Number of scrubbing passes
