@@ -1,15 +1,22 @@
-; /macros/adaptive_mesh.g
-; Adaptive Bed Mesh Routine for Duet Scanning Z Probe (SZP) on RRF 3.5+
+; /macros/adaptive_mesh
+; Adaptive Bed Mesh Routine with Strict Maximum Safety Clamping for SZP
 
 ; --- 1. Fallback if Slicer Coordinates are Missing ---
 if !exists(param.A) || !exists(param.B) || !exists(param.C) || !exists(param.D)
     echo "Adaptive Mesh: Missing parameters from OrcaSlicer. Running full bed mesh."
-    G29
+    M98 P"/sys/mesh.g"
     M99 
 
-; --- 2. Configuration Parameters ---
-var padding = 8              ; Margin around printed parts
+; --- 2. Configuration Parameters & Safety Limits ---
+var padding = 6              ; Margin around printed parts (Reduced slightly for tighter clearance)
 var target_spacing = 20      ; Scan point interval spacing (mm)
+
+; 🚨 ABSOLUTE MAX BOUNDARY CLAMPING (Enforce your safe reachable mesh limits here!)
+; Change these numbers to the maximum nozzle coordinates your SZP can safely reach
+var safe_max_x = 230.0       ; The furthest right the nozzle can go for a safe scan
+var safe_max_y = 240.0       ; The furthest back the nozzle can go for a safe scan
+var safe_min_x = 20.0        ; The furthest left the nozzle can go safely
+var safe_min_y = 30.0        ; The furthest forward the nozzle can go safely
 
 ; --- 3. Pull Dynamic Data from RRF Object Model ---
 var probe_x_offset = sensors.probes[0].offsets[0]
@@ -41,45 +48,45 @@ else
     if var.mesh_y_min < (var.bed_y_min - var.probe_y_offset)
         set var.mesh_y_min = var.bed_y_min - var.probe_y_offset
 
-; Overall bounds clamping to absolute bed dimensions
+; 🚨 NEW: Enforce the hard maximum safe area restrictions
+if var.mesh_x_min < var.safe_min_x
+    set var.mesh_x_min = var.safe_min_x
+if var.mesh_y_min < var.safe_min_y
+    set var.mesh_y_min = var.safe_min_y
+if var.mesh_x_max > var.safe_max_x
+    set var.mesh_x_max = var.safe_max_x
+if var.mesh_y_max > var.safe_max_y
+    set var.mesh_y_max = var.safe_max_y
+
+; Overall bounds clamping to absolute machine physical limits
 if var.mesh_x_min < var.bed_x_min
     set var.mesh_x_min = var.bed_x_min
-
 if var.mesh_y_min < var.bed_y_min
     set var.mesh_y_min = var.bed_y_min
-
 if var.mesh_x_max > var.bed_x_max
     set var.mesh_x_max = var.bed_x_max
-
 if var.mesh_y_max > var.bed_y_max
     set var.mesh_y_max = var.bed_y_max
 
 ; --- 6. Calculate Points for Scanning Probe grid ---
-; Replaced int() with RRF native floor() function to cleanly drop decimal points
 var calc_x = floor((var.mesh_x_max - var.mesh_x_min) / var.target_spacing) + 1
 var calc_y = floor((var.mesh_y_max - var.mesh_y_min) / var.target_spacing) + 1
 
-; Clamp X points between 4 and 15
 var points_x = var.calc_x
 if var.calc_x < 4
     set var.points_x = 4
 elif var.calc_x > 15
     set var.points_x = 15
 
-; Clamp Y points between 4 and 15
 var points_y = var.calc_y
 if var.calc_y < 4
     set var.points_y = 4
 elif var.calc_y > 15
     set var.points_y = 15
 
-; --- [Section 7 at the bottom of /macros/adaptive_mesh.g] ---
+; --- 7. Apply grid definition and run system file ---
 echo "SZP Adaptive Grid Defined: " ^ var.points_x ^ "x" ^ var.points_y
 echo "X-Span: " ^ var.mesh_x_min ^ " to " ^ var.mesh_x_max ^ " | Y-Span: " ^ var.mesh_y_min ^ " to " ^ var.mesh_y_max
 
-; 1. Apply the customized adaptive grid definition to the active state
 M557 X{var.mesh_x_min, var.mesh_x_max} Y{var.mesh_y_min, var.mesh_y_max} P{var.points_x, var.points_y}
-
-; 2. Explicitly call your system mesh file so its setup code executes perfectly
 M98 P"/sys/mesh.g"
-
