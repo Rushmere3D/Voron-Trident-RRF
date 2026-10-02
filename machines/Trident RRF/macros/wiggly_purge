@@ -11,7 +11,7 @@ var amplitude = 4.0          ; Width of the wave oscillation (mm)
 var period_length = 5.0      ; Length of one full wave cycle (mm)
 var purge_distance = 60.0    ; Total raw filament to extrude (mm)
 var print_speed = 600        ; Controlled speed cap (mm/min) -> 600 = 10mm/s
-var unretract_length = 6.0   ; Amount to prime nozzle tip before starting
+var unretract_length = 10.0   ; Amount to prime nozzle tip before starting
 var line_height = 0.4        ; Extrusion layer height
 var squish_factor = 0.8      ; Nozzle gap compression factor
 var direction = "X"          ; "X" = purges along the front, "Y" = purges along the side
